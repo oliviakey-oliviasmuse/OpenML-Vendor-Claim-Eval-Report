@@ -132,7 +132,7 @@ print("[1/5] Authenticating against OpenML...")
 openml.config.apikey = OPENML_API_KEY
 try:
     # list_datasets is public, but lists tasks to verify auth
-    test = openml.tasks.list_tasks(task_type_id=1, output_format="dataframe", size=1)
+    test = openml.tasks.list_tasks(output_format="dataframe", size=1)
     print(f"   Auth OK. Tasks visible: 1+")
 except Exception as e:
     print(f"   Auth FAIL: {e}")
@@ -155,7 +155,7 @@ except Exception as e:
 # AI4I 2020 is a classification task. Find the OpenML task for this dataset.
 print(f"   Looking up OpenML task for dataset {DATASET_ID}...")
 tasks_df = openml.tasks.list_tasks(
-    data_status="active",
+    data_id=DATASET_ID,
     output_format="dataframe",
 )
 matching = tasks_df[tasks_df["did"] == DATASET_ID]
