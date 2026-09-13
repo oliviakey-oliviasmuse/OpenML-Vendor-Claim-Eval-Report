@@ -1,0 +1,16 @@
+{
+  "study_id": 499,
+  "study_url": "https://www.openml.org/study/499",
+  "study_name": "Six Sigma capability of ML classifiers on credit-g (binary classification)",
+  "dataset_id": 31,
+  "task_id": 31,
+  "uploaded_run_ids": [],
+  "flow_ids": {
+    "kNN": 126559,
+    "RandomForest": 126560,
+    "GradientBoosting": 126561
+  },
+  "created_at": "2026-09-13T18:39:36",
+  "author": "Olivia Key <oliviakey@oliviasmuse.com>",
+  "github_repo": "https://github.com/oliviakey-oliviasmuse/OpenML-Vendor-Claim-Eval-Report"
+}

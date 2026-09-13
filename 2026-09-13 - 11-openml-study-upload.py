@@ -272,22 +272,33 @@ print(f"   GradientBoosting flow: id={flow_gb.flow_id}")
 
 
 # ============================================================================
-# 4. RUN EACH FLOW ON THE TASK + UPLOAD
+# 4. RUN EACH MODEL ON THE TASK + UPLOAD (flow + run together)
 # ============================================================================
-print(f"[4/5] Running flows on task {TASK_ID}...")
+print(f"[4/5] Running models on task {TASK_ID}...")
 
 uploaded_run_ids = []
 
+# Map flow -> underlying sklearn estimator (so we can pass the estimator
+# directly to run_model_on_task with upload_flow=True -- bypasses the
+# extension-during-deserialization issue we hit in 0.15.1).
+models_by_flow_id = {
+    flow_knn.flow_id: KNeighborsClassifier(n_neighbors=5),
+    flow_rf.flow_id: RandomForestClassifier(n_estimators=100, random_state=42),
+    flow_gb.flow_id: GradientBoostingClassifier(n_estimators=100, random_state=42),
+}
+
 for flow in [flow_knn, flow_rf, flow_gb]:
-    print(f"   Running flow {flow.flow_id} ({flow.name})...")
+    model = models_by_flow_id[flow.flow_id]
+    print(f"   Running {flow.name} (flow_id={flow.flow_id})...")
     try:
         run = openml.runs.run_model_on_task(
-            model=flow,
+            model=model,
             task=openml.tasks.get_task(TASK_ID, download_data=True),
             seed=42,
+            upload_flow=False,    # flow already published in step 3
+            avoid_duplicate_runs=False,
             n_jobs=-1,
         )
-        # Attach evaluation measures
         run = run.publish()
         uploaded_run_ids.append(run.run_id)
         print(f"   Uploaded run: {run.run_id}")
