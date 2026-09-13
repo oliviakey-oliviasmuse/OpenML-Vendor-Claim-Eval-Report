@@ -255,7 +255,7 @@ def make_sklearn_flow(sklearn_estimator, name, description, version="1"):
 # kNN: Project 1 baseline
 flow_knn = make_sklearn_flow(
     make_pipeline(KNeighborsClassifier(n_neighbors=5)),
-    name="oliviakey_KNeighborsClassifier_k5",
+    name="oliviakey_KNeighborsClassifier_k5_preproc",
     description=(
         "kNN baseline (k=5) with OrdinalEncoder preprocessing for credit-g binary classification. "
         "Six Sigma capability methodology audit. Olivia Key, 2026."
@@ -267,7 +267,7 @@ print(f"   kNN flow: id={flow_knn.flow_id}")
 # RandomForest: Project 2 + 2b
 flow_rf = make_sklearn_flow(
     make_pipeline(RandomForestClassifier(n_estimators=100, random_state=42)),
-    name="oliviakey_RandomForestClassifier_100trees",
+    name="oliviakey_RandomForestClassifier_100trees_preproc",
     description=(
         "RandomForest (100 trees) with OrdinalEncoder preprocessing for credit-g binary classification. "
         "Six Sigma capability methodology audit. Olivia Key, 2026."
@@ -279,7 +279,7 @@ print(f"   RandomForest flow: id={flow_rf.flow_id}")
 # GradientBoosting: Project 2 + 2b
 flow_gb = make_sklearn_flow(
     make_pipeline(GradientBoostingClassifier(n_estimators=100, random_state=42)),
-    name="oliviakey_GradientBoostingClassifier_100trees",
+    name="oliviakey_GradientBoostingClassifier_100trees_preproc",
     description=(
         "GradientBoosting (100 trees) with OrdinalEncoder preprocessing for credit-g binary classification. "
         "Six Sigma capability methodology audit. Olivia Key, 2026."
