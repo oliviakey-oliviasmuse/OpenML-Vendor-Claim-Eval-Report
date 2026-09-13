@@ -224,8 +224,8 @@ except Exception as e:
 # We probe the actual data once to identify categorical columns by dtype.
 print(f"[3/5] Building sklearn Pipelines with categorical encoders...")
 
-_df_probe, _ = ds.get_data(
-    target=ds.default_target_attribute,
+_df_probe, _ = dataset.get_data(
+    target=dataset.default_target_attribute,
     dataset_format="dataframe",
 )
 cat_cols = [c for c in _df_probe.columns if _df_probe[c].dtype == 'object']
