@@ -100,22 +100,31 @@ assert OPENML_API_KEY, (
     "  $env:OPENML_API_KEY.Length\n"
 )
 
-DATASET_ID = 42890  # AI4I 2020 Predictive Maintenance (OpenML)
+DATASET_ID = 31     # credit-g (OpenML ID 31) -- Project 1 baseline.
+                      # Originally targeted AI4I 2020 (ID 42890) but that dataset's
+                      # feature metadata on OpenML is incomplete and rejects
+                      # task creation with code 622 (target_feature FK lookup
+                      # returns no matches). credit-g has complete metadata
+                      # and accepts task creation. AI4I 2020 to be revisited
+                      # after OpenML metadata issue is reported.
+TARGET_NAME = "class" # credit-g's binary target column name.
 TASK_ID = None       # will be looked up
 N_REPEATS = 1         # number of repeats (cross-validated runs)
 N_FOLDS = 10          # folds per repeat
 
-# Study metadata -- this is what shows up on OpenML under the AI4I 2020 dataset page
+# Study metadata -- this is what shows up on OpenML under the credit-g dataset page
 STUDY_NAME = (
-    "Six Sigma capability of ML classifiers on AI4I 2020 Predictive Maintenance"
+    "Six Sigma capability of ML classifiers on credit-g (binary classification)"
 )
 STUDY_DESCRIPTION = (
-    "Six Sigma + ML methodology audit on the AI4I 2020 Predictive Maintenance "
-    "dataset (OpenML ID 42890). Evaluates three classifier families "
-    "(kNN, RandomForest, GradientBoosting) under cross-validation and reports "
-    "predictive accuracy + macro F1. Capability framing is documented in the "
-    "associated public GitHub repository "
+    "Six Sigma + ML methodology audit on the credit-g dataset (OpenML ID 31). "
+    "Evaluates three classifier families (kNN, RandomForest, GradientBoosting) "
+    "under 10-fold cross-validation and reports predictive accuracy + macro F1. "
+    "Capability framing is documented in the associated public GitHub repository "
     "(https://github.com/oliviakey-oliviasmuse/OpenML-Vendor-Claim-Eval-Report). "
+    "Originally targeted AI4I 2020 Predictive Maintenance (OpenML ID 42890) but "
+    "that dataset's feature metadata on OpenML is incomplete and rejects task "
+    "creation with code 622 (target_feature foreign-key lookup returns no matches). "
     "Methodology reference: lean-six-sigma-expert (Mavis consulting agent). "
     f"Created: {datetime.now().isoformat(timespec='seconds')}"
 )
@@ -142,7 +151,7 @@ except Exception as e:
 # ============================================================================
 # 2. VERIFY DATASET + FIND TASK
 # ============================================================================
-print(f"[2/5] Loading dataset {DATASET_ID} (AI4I 2020 Predictive Maintenance)...")
+print(f"[2/5] Loading dataset {DATASET_ID} ({'credit-g' if DATASET_ID == 31 else 'AI4I 2020' if DATASET_ID == 42890 else 'unknown'})...")
 try:
     dataset = openml.datasets.get_dataset(DATASET_ID, download_data=True, download_qualities=False)
     print(f"   Dataset: {dataset.name} v{dataset.version}")
@@ -152,7 +161,8 @@ except Exception as e:
     sys.exit(1)
 
 
-# AI4I 2020 is a classification task. Find the OpenML task for this dataset.
+# credit-g (binary classification) - find the OpenML task for this dataset.
+# AI4I 2020 target = "Machine failure"; credit-g target = "class"
 print(f"   Looking up OpenML task for dataset {DATASET_ID}...")
 # Standard OpenML estimation procedure IDs:
 #   1 = Holdout, 2 = 10-fold CV, 3 = 5-fold CV, 4 = 5x2 CV, 5 = 10 times 10-fold CV
@@ -178,7 +188,7 @@ try:
         task = openml.tasks.create_task(
             task_type=openml.tasks.TaskType.SUPERVISED_CLASSIFICATION,
             dataset_id=DATASET_ID,
-            target_name="Machine failure",  # the binary target in AI4I 2020
+            target_name=TARGET_NAME,
             estimation_procedure_id=ESTIMATION_PROCEDURE_ID,
         )
         task = task.publish()
@@ -191,7 +201,7 @@ except Exception as e:
         task = openml.tasks.create_task(
             task_type=openml.tasks.TaskType.SUPERVISED_CLASSIFICATION,
             dataset_id=DATASET_ID,
-            target_name="Machine failure",
+            target_name=TARGET_NAME,
             estimation_procedure_id=ESTIMATION_PROCEDURE_ID,
         )
         task = task.publish()
