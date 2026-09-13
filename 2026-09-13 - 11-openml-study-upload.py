@@ -140,6 +140,9 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 # ============================================================================
 print("[1/5] Authenticating against OpenML...")
 openml.config.apikey = OPENML_API_KEY
+# openml-python 0.15+ requires explicit extension registration before
+# run_model_on_task() can dispatch flows back to model instances.
+openml.extensions.register_extension(SklearnExtension())
 try:
     # list_datasets is public, but lists tasks to verify auth
     test = openml.tasks.list_tasks(output_format="dataframe", size=1)
@@ -302,7 +305,6 @@ study = openml.study.create_study(
     name=STUDY_NAME,
     description=STUDY_DESCRIPTION,
     run_ids=uploaded_run_ids,
-    status="active",
 )
 study = study.publish()
 study_id = study.id
