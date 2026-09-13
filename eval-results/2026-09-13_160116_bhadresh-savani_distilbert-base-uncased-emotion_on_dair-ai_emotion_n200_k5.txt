@@ -1,0 +1,33 @@
+VENDOR ML CLAIM EVALUATION REPORT
+======================================================================
+Generated:      2026-09-13T16:01:16
+Model:          bhadresh-savani/distilbert-base-uncased-emotion
+Dataset:        dair-ai/emotion
+Sample size:    200
+Chunks:         5
+Random baseline:0.1667
+----------------------------------------------------------------------
+Chunk accuracies (raw distribution):
+  Chunk 1/5:  97.50%
+  Chunk 2/5:  92.50%
+  Chunk 3/5:  92.50%
+  Chunk 4/5:  87.50%
+  Chunk 5/5:  95.00%
+----------------------------------------------------------------------
+Six Sigma capability report:
+  Mean accuracy:    93.00%
+  Std deviation:  +/-  3.32%
+  DPMO:               70,000
+  Sigma level:      2.98sigma
+  Cpk:              0.70
+  n_folds:        5
+----------------------------------------------------------------------
+Verdict (6sigma bar):
+  Sigma >= 6.00:  FAIL
+  DPMO  <= 3.4:   FAIL
+  Cpk   >= 2.00:  FAIL
+  Overall:        Below 6sigma
+======================================================================
+
+Methodology reference: lean-six-sigma-expert agent (Mavis)
+Six Sigma bar: 6sigma = 3.4 DPMO = Cpk >= 2.0 (Motorola 1.5sigma shift)

@@ -1,0 +1,80 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.python-version
+
+# Jupyter / IPython
+.ipynb_checkpoints/
+profile_default/
+ipython_config.py
+*.ipynb_checkpoints
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+secrets.txt
+*.secret
+HF_TOKEN*
+GH_TOKEN*
+*token*.txt
+
+# Hugging Face cache (outside repo, but just in case)
+.cache/
+.huggingface/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+ehthumbs_vista.db
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# Logs
+*.log
+logs/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Eval-results: keep .txt reports, exclude raw model files
+# (eval-results/*.txt is committed; eval-results/*.bin / *.safetensors is ignored)
+eval-results/*.bin
+eval-results/*.safetensors
+eval-results/*.pt
+eval-results/*.gguf
+eval-results/**/*.bin
+eval-results/**/*.safetensors
