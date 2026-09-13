@@ -78,3 +78,7 @@ eval-results/*.pt
 eval-results/*.gguf
 eval-results/**/*.bin
 eval-results/**/*.safetensors
+
+# Private consulting IP — never push to public repo
+lean-six-sigma-expert.md
+lean-six-sigma-skill.md
