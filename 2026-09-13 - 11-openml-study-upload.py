@@ -237,7 +237,7 @@ flow_knn = make_sklearn_flow(
     KNeighborsClassifier(n_neighbors=5),
     name="oliviakey_KNeighborsClassifier_k5",
     description=(
-        "kNN baseline (k=5) for AI4I 2020 Predictive Maintenance. "
+        "kNN baseline (k=5) for credit-g binary classification. "
         "Six Sigma capability methodology audit. Olivia Key, 2026."
     ),
 )
@@ -249,7 +249,7 @@ flow_rf = make_sklearn_flow(
     RandomForestClassifier(n_estimators=100, random_state=42),
     name="oliviakey_RandomForestClassifier_100trees",
     description=(
-        "RandomForest (100 trees) for AI4I 2020 Predictive Maintenance. "
+        "RandomForest (100 trees) for credit-g binary classification. "
         "Six Sigma capability methodology audit. Olivia Key, 2026."
     ),
 )
@@ -261,7 +261,7 @@ flow_gb = make_sklearn_flow(
     GradientBoostingClassifier(n_estimators=100, random_state=42),
     name="oliviakey_GradientBoostingClassifier_100trees",
     description=(
-        "GradientBoosting (100 trees) for AI4I 2020 Predictive Maintenance. "
+        "GradientBoosting (100 trees) for credit-g binary classification. "
         "Six Sigma capability methodology audit. Olivia Key, 2026."
     ),
 )
