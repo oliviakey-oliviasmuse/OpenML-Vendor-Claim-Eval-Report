@@ -219,7 +219,7 @@ except Exception as e:
 print(f"[3/5] Defining OpenML flows...")
 
 
-def make_sklearn_flow(sklearn_estimator, name, description, version="1.0"):
+def make_sklearn_flow(sklearn_estimator, name, description, version="1"):
     """Wrap a scikit-learn estimator as an OpenML Flow with explicit metadata."""
     # openml-python 0.15+: SklearnExtension.model_to_flow replaces the removed
     # openml.flows.sklearn_flow.sklearn_to_flow helper.
@@ -227,6 +227,7 @@ def make_sklearn_flow(sklearn_estimator, name, description, version="1.0"):
     flow = ext.model_to_flow(sklearn_estimator)
     flow.name = name
     flow.description = description
+    # OpenML XSD schema requires <oml:version> to be xs:int -- "1" not "1.0".
     flow.version = version
     return flow
 
