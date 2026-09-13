@@ -154,30 +154,52 @@ except Exception as e:
 
 # AI4I 2020 is a classification task. Find the OpenML task for this dataset.
 print(f"   Looking up OpenML task for dataset {DATASET_ID}...")
-tasks_df = openml.tasks.list_tasks(
-    data_id=DATASET_ID,
-    output_format="dataframe",
-)
-matching = tasks_df[tasks_df["did"] == DATASET_ID]
-if len(matching) == 0:
-    print(f"   No task found for dataset {DATASET_ID}. Creating one...")
-    # Create the task if it doesn't exist. Use a standard supervised classification setup.
-    task = openml.tasks.create_task(
-        task_type=openml.tasks.TaskType.SUPERVISED_CLASSIFICATION,
-        dataset_id=DATASET_ID,
-        target_name="Machine failure",  # the binary target in AI4I 2020
-        estimation_procedure=openml.estimation_procedures.CrossValidation(
-            num_folds=N_FOLDS, num_repeats=N_REPEATS
-        ),
+try:
+    tasks_df = openml.tasks.list_tasks(
+        data_id=DATASET_ID,
+        output_format="dataframe",
     )
-    task = task.publish()
-    TASK_ID = task.id
-    print(f"   Task created: {TASK_ID}")
-else:
-    # Use the existing task. Prefer the binary classification task (target = Machine failure).
-    task_row = matching[matching["task_type"] == "Supervised Classification"].iloc[0]
-    TASK_ID = int(task_row["tid"])
-    print(f"   Existing task: {TASK_ID}")
+    if "did" in tasks_df.columns and len(tasks_df) > 0:
+        matching = tasks_df[tasks_df["did"] == DATASET_ID]
+        if len(matching) > 0:
+            # Use the existing task. Prefer the supervised classification task.
+            task_row = matching[matching["task_type"].str.contains("Classification", na=False)].iloc[0]
+            TASK_ID = int(task_row["tid"])
+            print(f"   Existing task: {TASK_ID}")
+        else:
+            raise ValueError("No existing task matches, creating one")
+    else:
+        # OpenML returns an empty DataFrame with no columns when filter yields zero rows
+        print(f"   No existing task found for dataset {DATASET_ID}. Creating one...")
+        task = openml.tasks.create_task(
+            task_type=openml.tasks.TaskType.SUPERVISED_CLASSIFICATION,
+            dataset_id=DATASET_ID,
+            target_name="Machine failure",  # the binary target in AI4I 2020
+            estimation_procedure=openml.estimation_procedures.CrossValidation(
+                num_folds=N_FOLDS, num_repeats=N_REPEATS
+            ),
+        )
+        task = task.publish()
+        TASK_ID = task.id
+        print(f"   Task created: {TASK_ID}")
+except Exception as e:
+    print(f"   Task lookup/create failed: {e}")
+    print(f"   Attempting task creation directly...")
+    try:
+        task = openml.tasks.create_task(
+            task_type=openml.tasks.TaskType.SUPERVISED_CLASSIFICATION,
+            dataset_id=DATASET_ID,
+            target_name="Machine failure",
+            estimation_procedure=openml.estimation_procedures.CrossValidation(
+                num_folds=N_FOLDS, num_repeats=N_REPEATS
+            ),
+        )
+        task = task.publish()
+        TASK_ID = task.id
+        print(f"   Task created: {TASK_ID}")
+    except Exception as e2:
+        print(f"   Task creation FAIL: {e2}")
+        sys.exit(1)
 
 
 # ============================================================================
