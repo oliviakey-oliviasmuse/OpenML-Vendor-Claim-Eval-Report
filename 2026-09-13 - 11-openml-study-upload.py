@@ -154,6 +154,10 @@ except Exception as e:
 
 # AI4I 2020 is a classification task. Find the OpenML task for this dataset.
 print(f"   Looking up OpenML task for dataset {DATASET_ID}...")
+# Standard OpenML estimation procedure IDs:
+#   1 = Holdout, 2 = 10-fold CV, 3 = 5-fold CV, 4 = 5x2 CV, 5 = 10 times 10-fold CV
+# We use 2 (10-fold CV) — the standard for classification benchmarking.
+ESTIMATION_PROCEDURE_ID = 2
 try:
     tasks_df = openml.tasks.list_tasks(
         data_id=DATASET_ID,
@@ -175,9 +179,7 @@ try:
             task_type=openml.tasks.TaskType.SUPERVISED_CLASSIFICATION,
             dataset_id=DATASET_ID,
             target_name="Machine failure",  # the binary target in AI4I 2020
-            estimation_procedure=openml.estimation_procedures.CrossValidation(
-                num_folds=N_FOLDS, num_repeats=N_REPEATS
-            ),
+            estimation_procedure_id=ESTIMATION_PROCEDURE_ID,
         )
         task = task.publish()
         TASK_ID = task.id
@@ -190,9 +192,7 @@ except Exception as e:
             task_type=openml.tasks.TaskType.SUPERVISED_CLASSIFICATION,
             dataset_id=DATASET_ID,
             target_name="Machine failure",
-            estimation_procedure=openml.estimation_procedures.CrossValidation(
-                num_folds=N_FOLDS, num_repeats=N_REPEATS
-            ),
+            estimation_procedure_id=ESTIMATION_PROCEDURE_ID,
         )
         task = task.publish()
         TASK_ID = task.id
