@@ -140,10 +140,8 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 # ============================================================================
 print("[1/5] Authenticating against OpenML...")
 openml.config.apikey = OPENML_API_KEY
-# openml-python 0.15+ requires explicit extension registration before
-# run_model_on_task() can dispatch flows back to model instances.
-# register_extension() takes a CLASS, not an instance.
-openml.extensions.register_extension(SklearnExtension)
+# SklearnExtension is auto-registered by openml-python on import -- do NOT
+# call register_extension again, that creates duplicates and breaks flow lookup.
 try:
     # list_datasets is public, but lists tasks to verify auth
     test = openml.tasks.list_tasks(output_format="dataframe", size=1)
