@@ -82,9 +82,11 @@ except (AttributeError, ValueError):
 
 import openml
 from openml.extensions.sklearn.extension import SklearnExtension
+from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import LabelEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 
 
 # ============================================================================
@@ -215,43 +217,57 @@ except Exception as e:
         sys.exit(1)
 
 
-# ============================================================================
-# 3. DEFINE THREE FLOWS
-# ============================================================================
-print(f"[3/5] Defining OpenML flows...")
+# credit-g has 14 categorical (symbolic) features out of 21. sklearn
+# classifiers require numeric input, so we wrap each classifier in a
+# Pipeline that ordinal-encodes the categoricals first.
+#
+# We probe the actual data once to identify categorical columns by dtype.
+print(f"[3/5] Building sklearn Pipelines with categorical encoders...")
+
+_df_probe, _ = ds.get_data(
+    target=ds.default_target_attribute,
+    dataset_format="dataframe",
+)
+cat_cols = [c for c in _df_probe.columns if _df_probe[c].dtype == 'object']
+print(f"   Detected {len(cat_cols)} categorical columns: {cat_cols}")
+
+# Build the preprocessing + classifier pipeline template
+def make_pipeline(classifier):
+    preprocessor = ColumnTransformer(
+        transformers=[("cat", OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1), cat_cols)],
+        remainder="passthrough",
+    )
+    return Pipeline([("prep", preprocessor), ("clf", classifier)])
 
 
 def make_sklearn_flow(sklearn_estimator, name, description, version="1"):
-    """Wrap a scikit-learn estimator as an OpenML Flow with explicit metadata."""
-    # openml-python 0.15+: SklearnExtension.model_to_flow replaces the removed
-    # openml.flows.sklearn_flow.sklearn_to_flow helper.
+    """Wrap a sklearn Pipeline (preprocessor + classifier) as an OpenML Flow."""
     ext = SklearnExtension()
     flow = ext.model_to_flow(sklearn_estimator)
     flow.name = name
     flow.description = description
-    # OpenML XSD schema requires <oml:version> to be xs:int -- "1" not "1.0".
     flow.version = version
     return flow
 
 
 # kNN: Project 1 baseline
 flow_knn = make_sklearn_flow(
-    KNeighborsClassifier(n_neighbors=5),
+    make_pipeline(KNeighborsClassifier(n_neighbors=5)),
     name="oliviakey_KNeighborsClassifier_k5",
     description=(
-        "kNN baseline (k=5) for credit-g binary classification. "
+        "kNN baseline (k=5) with OrdinalEncoder preprocessing for credit-g binary classification. "
         "Six Sigma capability methodology audit. Olivia Key, 2026."
     ),
 )
 flow_knn = flow_knn.publish()
 print(f"   kNN flow: id={flow_knn.flow_id}")
 
-# RandomForest: Project 2 + 2b (we'll run twice -- once for leakage context, once leakage-clean)
+# RandomForest: Project 2 + 2b
 flow_rf = make_sklearn_flow(
-    RandomForestClassifier(n_estimators=100, random_state=42),
+    make_pipeline(RandomForestClassifier(n_estimators=100, random_state=42)),
     name="oliviakey_RandomForestClassifier_100trees",
     description=(
-        "RandomForest (100 trees) for credit-g binary classification. "
+        "RandomForest (100 trees) with OrdinalEncoder preprocessing for credit-g binary classification. "
         "Six Sigma capability methodology audit. Olivia Key, 2026."
     ),
 )
@@ -260,10 +276,10 @@ print(f"   RandomForest flow: id={flow_rf.flow_id}")
 
 # GradientBoosting: Project 2 + 2b
 flow_gb = make_sklearn_flow(
-    GradientBoostingClassifier(n_estimators=100, random_state=42),
+    make_pipeline(GradientBoostingClassifier(n_estimators=100, random_state=42)),
     name="oliviakey_GradientBoostingClassifier_100trees",
     description=(
-        "GradientBoosting (100 trees) for credit-g binary classification. "
+        "GradientBoosting (100 trees) with OrdinalEncoder preprocessing for credit-g binary classification. "
         "Six Sigma capability methodology audit. Olivia Key, 2026."
     ),
 )
@@ -278,21 +294,21 @@ print(f"[4/5] Running models on task {TASK_ID}...")
 
 uploaded_run_ids = []
 
-# Map flow -> underlying sklearn estimator (so we can pass the estimator
-# directly to run_model_on_task with upload_flow=True -- bypasses the
-# extension-during-deserialization issue we hit in 0.15.1).
-models_by_flow_id = {
-    flow_knn.flow_id: KNeighborsClassifier(n_neighbors=5),
-    flow_rf.flow_id: RandomForestClassifier(n_estimators=100, random_state=42),
-    flow_gb.flow_id: GradientBoostingClassifier(n_estimators=100, random_state=42),
+# Map flow -> underlying sklearn Pipeline (preprocessor + classifier).
+# Pass the Pipeline object directly so run_model_on_task can fit+upload
+# without needing extension-based deserialization.
+pipelines_by_flow_id = {
+    flow_knn.flow_id: make_pipeline(KNeighborsClassifier(n_neighbors=5)),
+    flow_rf.flow_id: make_pipeline(RandomForestClassifier(n_estimators=100, random_state=42)),
+    flow_gb.flow_id: make_pipeline(GradientBoostingClassifier(n_estimators=100, random_state=42)),
 }
 
 for flow in [flow_knn, flow_rf, flow_gb]:
-    model = models_by_flow_id[flow.flow_id]
+    pipeline = pipelines_by_flow_id[flow.flow_id]
     print(f"   Running {flow.name} (flow_id={flow.flow_id})...")
     try:
         run = openml.runs.run_model_on_task(
-            model=model,
+            model=pipeline,
             task=openml.tasks.get_task(TASK_ID, download_data=True),
             seed=42,
             upload_flow=False,    # flow already published in step 3
