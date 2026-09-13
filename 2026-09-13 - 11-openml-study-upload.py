@@ -81,6 +81,7 @@ except (AttributeError, ValueError):
     pass
 
 import openml
+from openml.extensions.sklearn.extension import SklearnExtension
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
@@ -220,8 +221,10 @@ print(f"[3/5] Defining OpenML flows...")
 
 def make_sklearn_flow(sklearn_estimator, name, description, version="1.0"):
     """Wrap a scikit-learn estimator as an OpenML Flow with explicit metadata."""
-    # OpenML needs a flow name and description that show up on the flow page.
-    flow = openml.flows.sklearn_flow.sklearn_to_flow(sklearn_estimator)
+    # openml-python 0.15+: SklearnExtension.model_to_flow replaces the removed
+    # openml.flows.sklearn_flow.sklearn_to_flow helper.
+    ext = SklearnExtension()
+    flow = ext.model_to_flow(sklearn_estimator)
     flow.name = name
     flow.description = description
     flow.version = version
